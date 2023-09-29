@@ -70,6 +70,8 @@
     community.docker.docker_container:
       name: "{{ apache_container_name }}"
       image: "{{ apache_image }}"
+      ports:
+        - "81:80"
       state: started
   
   - name: Create MYSQL containers

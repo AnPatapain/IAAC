@@ -3,11 +3,17 @@
 - hosts: web_server_dockers
   become: true
   vars:
-    container_count: 3
     default_container_name: docker
     default_container_image: ubuntu
-    default_container_command: /bin/bash -c "apt-get update && apt-get install -y hping3"
 
+    apache_image : ubuntu/apache2
+    database_image: mysql
+    apache_container_name: conatiner-apache2
+    database_container_name: container-mysql
+
+
+    docker_volume: data 
+    db_name : test
   tasks:
   - name: install aptitude
     apt:
@@ -48,17 +54,37 @@
     pip:
       name: docker
 
-  - name: Pull default Docker image
+  # Pulling docker image
+  - name: Pull APACHE2
     community.docker.docker_image:
-      name: "{{ default_container_image }}"
+      name: "{{ apache_image }}"
       source: pull
 
-  # TODO: PULL Container Images: MySQL, APACHE2
-  - name: Create default containers
+  - name: Pull MYSQL
+    community.docker.docker_image:
+      name: "{{ database_image }}"
+      source: pull
+
+  # Create docker container
+  - name: Create APACHE2 containers
     community.docker.docker_container:
-      name: "{{ default_container_name }}{{ item }}"
-      image: "{{ default_container_image }}"
-      command: "{{ default_container_command }}"
+      name: "{{ apache_container_name }}"
+      image: "{{ apache_image }}"
       state: started
-    with_sequence: count={{ container_count }}
+  
+  - name: Create MYSQL containers
+    community.docker.docker_container:
+      name: "{{ database_container_name }}" 
+      image: "{{ database_image }}"
+      volumes:
+        - "{{ docker_volume }}:/var/lib/mysql:rw"
+      env: 
+        MYSQL_ROOT_PASSWORD: "123456"
+        MYSQL_DATABASE: test
+        MYSQL_USER: test
+        MYSQL_PASSWORD: "123456"        
+      ports:
+        - "3360:3360"
+      detach: yes
+      restart: true
 

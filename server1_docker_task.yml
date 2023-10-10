@@ -90,3 +90,17 @@
       detach: yes
       restart: true
 
+  - name: Pull Todo list docker
+    docker_image:
+      name: untergas/getting-started
+      source: pull
+
+
+  - name: Run Docker container
+    docker_container:
+      name: getting-started-container
+      image: untergas/getting-started
+      state: started
+      detach: yes
+      ports:
+        - "3001:3000"  # Adjust ports as needed

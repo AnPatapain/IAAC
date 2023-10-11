@@ -1,0 +1,26 @@
+- name: deploy web service on managerNode, managerNode then assign the task to the worker node.
+  hosts: managerNode
+  become: true
+  
+  tasks:
+    # Prepare the env for app service 
+    - name: create working dir on manager node 
+      file:
+        path: /tmp/automated_pentest
+        state: directory
+      
+    - name: copy files from host to manager node
+      copy:
+        src: docker-compose.yml
+        dest: /tmp/automated_pentest/docker-compose.yml
+
+    # Start the app service from built image
+    - name: Deploy stack from a compose file
+      community.docker.docker_stack:
+        state: present
+        name: webstack
+        compose:
+          - /tmp/automated_pentest/docker-compose.yml
+
+    
+    

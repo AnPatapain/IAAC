@@ -1,0 +1,38 @@
+- name: Install dependencies for all cluster nodes
+  hosts: all
+  become: true
+  tasks:
+    - name: Install required packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: ['python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: Install python package
+      pip:
+        executable: pip3
+        name: [jsondiff, passlib, docker]
+
+
+- name: Initialize docker swarm
+  hosts: managerNode
+  become: true
+  tasks:
+    - name: Init docker swarm. Register the output to get the token later.
+      docker_swarm:
+        state: present
+        advertise_addr: 192.168.56.20
+      register: manager_output
+  
+- name: Join the cluster
+  hosts: workerNodes
+  become: true
+  tasks:
+    - name: Log the token
+      debug:
+        msg: "{{ hostvars[groups['managerNode'][0]].manager_output.swarm_facts.JoinTokens }}"
+    
+    - name: Join to docker swarm as worker role
+      docker_swarm:
+        state: join
+        join_token: "{{ hostvars[groups['managerNode'][0]].manager_output.swarm_facts.JoinTokens.Worker }}"
+        remote_addrs: ['192.168.56.20']
+      

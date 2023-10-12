@@ -1,5 +1,5 @@
 # Infrastructure as Code
-### Run Vagrantfile to create for vm:  
+### Run Vagrantfile to create four vms:  
 ```vagrant up```    
 ### Create docker swarm cluster:  
 ```ansible-playbook -i inventory create_cluster.yml```  
@@ -18,7 +18,7 @@
 
 **Worker node**: Do the task assigned by manager node  
 
-**Service VS Task**: We want to deploy apache web "Service" with 3 replicas. The manager node will tell the worker nodes: "Hey let's build and run a apache container". the worker node then runs a container with apache image. The container that's running called "Task".  
+**Service VS Task**: We want to deploy apache web "Service" with 3 replicas. The manager node will tell the worker nodes: "Hey let's build and run a apache container". the worker node then runs a container with apache image. The running container on each node called "Task".  
 ```
 Service = Image + Command to run + replicas  
 Task = Container's executing the command

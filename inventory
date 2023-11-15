@@ -4,6 +4,7 @@ vagrant@192.168.56.20
 [workerNodes]
 vagrant@192.168.56.21
 vagrant@192.168.56.22
+vagrant@192.168.56.23
 
 [all:vars]
 ansible_connection=ssh

@@ -1,35 +1,26 @@
-# automated_pentest
-## Run Vagrantfile to start 3 virtual machines (2 Servers and 1 Target)
-**Check the vagrantfile**:  
-```nano Vagrantfile```  
-Check ip address of your local machine: ```ip a``` for me it's 192.168.56.1  
-Replace the ip address of three Vms. 3 Vms must be in the same network interface of your local machine, for me the interface is: 192.168.56.*  
-```
-# Replace the ips that match your network interface
-server1.vm.network "private_network", ip: "192.168.56.20"    
-server2.vm.network "private_network", ip: "192.168.56.21"  
-target.vm.network "private_network", ip: "192.168.56.22"  
-```
-
-**Startup 3 Vms**:  
+# Infrastructure as Code
+### Run Vagrantfile to create four vms:  
 ```vagrant up```    
+### Create docker swarm cluster:  
+```ansible-playbook -i inventory create_cluster.yml```  
+### Deploy the untergas/getting-started to the docker swarm:  
+```ansible-playbook -i inventory deploy_service.yml```  
 
+### Docker Swarm Cluster  
 
-**Start ddos task with Ansible**  
-The inventory is the file that defines all remote servers that ansible manages. To see the file  
-```cat .vagrant/provisioners/ansible/inventory/```  
+![screenshot](docker_swarm.png)  
 
-_ddos.yml_ is the playbook that makes server1 and server2 do the DDOS task concurently. To run it  
-```ansible-playbook -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory ddos.yml```  
+**Cluster**: group of either physical or virtual machines that are running the Docker application  
 
-**Monitor the result**  
-Go to the target:  
+**Node**: either physical or vm inside the cluster  
+
+**Manager node**: Receive Service from docker-compose and assign tasks to worker node  
+
+**Worker node**: Do the task assigned by manager node  
+
+**Service VS Task**: We want to deploy apache web "Service" with 3 replicas. The manager node will tell the worker nodes: "Hey let's build and run a apache container". the worker node then runs a container with apache image. The running container on each node called "Task".  
 ```
-vagrant ssh target
-ip a
-sudo tcpdump -i <your interface>
-```    
-Turn on your terminal then try to fetch default apache2 page from the target:  
-```curl <ip of target>```
-
+Service = Image + Command to run + replicas  
+Task = Container's executing the command
+```
  

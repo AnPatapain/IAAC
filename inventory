@@ -1,2 +1,13 @@
-[web_server_dockers]
-vagrant@192.168.56.20 
+[managerNode]
+vagrant@192.168.56.20
+
+[workerNodes]
+vagrant@192.168.56.21
+vagrant@192.168.56.22
+vagrant@192.168.56.23
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_password=vagrant
+

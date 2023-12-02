@@ -1,0 +1,71 @@
+version: '3.4'
+services:
+  db:
+    image: mysql:8.0
+    networks:
+      todo-app:
+        aliases:
+          - mysql
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=todos
+    deploy:
+      replicas: 1
+      placement:
+        # Only run tasks for service on worker node
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-psecret", "-e", "SELECT 1"]
+      interval: 5s
+      retries: 3
+      start_period: 10s
+    
+  app:
+    image: untergas/getting-started
+    ports:
+      - "3001:3000"
+
+    networks:
+      todo-app:
+        aliases: 
+          - app
+    # Specify the databse for web service
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DB=todos
+
+    deploy:
+      replicas: 5
+      placement:
+        # Only run tasks for service on worker node
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+
+    healthcheck:
+      test: ["CMD", "sh", "-c", "sleep 10 && wget -q --spider http://localhost:3000 || false"]
+      interval: 2s
+      retries: 3
+      start_period: 10s
+    
+networks:
+  todo-app:
+    driver: overlay
+
+volumes:
+  todo-mysql-data:
